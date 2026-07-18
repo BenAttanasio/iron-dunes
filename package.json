@@ -1,0 +1,9 @@
+{
+  "name": "tank-wars",
+  "version": "1.0.0",
+  "description": "Tank Wars - Multiplayer tank combat game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
