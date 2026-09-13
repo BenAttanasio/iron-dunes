@@ -16,9 +16,29 @@ bonus.com was a pre-Newgrounds portal full of Java and Flash games that shut dow
 around 2011, and when Flash itself died in 2020 the game went with it. There's no
 archive of it that I've found, and almost nothing written about it anywhere.
 
+<table>
+<tr>
+<td align="center" width="50%">
+<img src="Old%20Images/bonus-com-title.jpg" width="340" alt="Battlefield 2: Rogue Battalions title screen on bonus.com, a painted tank in a dust storm above an ENTER button">
+<br><sub><b>The enter screen.</b> 340x324, as it loaded on bonus.com.</sub>
+</td>
+<td align="center" width="50%">
+<img src="Old%20Images/bonus-com-gameplay.jpg" width="289" alt="Battlefield 2: Rogue Battalions gameplay, a top-down tank on rippled sand with a green wireframe HUD and radar">
+<br><sub><b>The only surviving gameplay capture.</b> 289x277. Every art decision in Iron Dunes traces back to this one JPEG.</sub>
+</td>
+</tr>
+</table>
+
 This is a from-scratch rebuild. None of the original code, art, or audio is here.
-The art direction was reconstructed from a single surviving reference screenshot,
-kept in `Old Images/preview.webp`.
+The art direction was reconstructed from the gameplay capture above: the rippled
+sand, the painted top-down tanks with their long drop shadows, the green
+wireframe instrument panels, and the brass radar dome in the corner. An upscale
+of it sits in `Old Images/preview.webp`, which is what I actually painted the
+runtime textures against, since the original is 289 pixels wide and falls apart
+past about 200% zoom.
+
+If you have a better capture of the original, or anything written about it, open
+an issue. Those two files are everything I've been able to find.
 
 Two things inherit directly from the original and shouldn't be renamed: the four
 clan names (Martian Militia, Peace Keepers, Dune Dragoons, Blue Tide), and the
@@ -104,7 +124,10 @@ public/
   assets/        fx sprites, terrain detail, sfx
   CREDITS.md     asset licences, also shown on the pause screen
 docs/GAME_DESIGN.md
-Old Images/preview.webp    the reference screenshot the art was rebuilt from
+Old Images/
+  bonus-com-title.jpg      original bonus.com enter screen
+  bonus-com-gameplay.jpg   original bonus.com gameplay capture
+  preview.webp             upscale of the gameplay capture, used while painting
 server.js                  static file server for local dev
 ```
 
