@@ -10,7 +10,14 @@ export const game = {
   respawnAt: 0,        // game.time at which the dead player redeploys
   spawnProtection: 0,  // ms remaining of post-respawn invulnerability
   lastDeathXpLoss: 0,  // shown on the death screen
+  lastDeathCargo: 0,   // units dropped on death, also shown there
   fuelWarned: false,
+
+  // Per-clan hostility toward the player, 0..NOTORIETY_MAX. Rises when you kill a
+  // clan's tanks, decays with time. Past NOTORIETY_HUNT_AT that clan dispatches a
+  // hunter squad that comes looking for you specifically.
+  notoriety: [0, 0, 0, 0],
+  huntersUntil: [0, 0, 0, 0],
 };
 
 export const camera = { x: 0, y: 0, trauma: 0 };
@@ -24,11 +31,17 @@ export const pickups = [];
 export const resourceNodes = [];
 export const bases = [];
 
+// Noise contacts: loud events (drilling) that hostiles converge on. Consumed and
+// cleared by npc.js each frame — this is the only channel between the resource
+// system and the AI, which keeps world.js from importing npc.js.
+export const noiseEvents = [];
+
 export const input = {
   keys: {},
   mouseX: 0, mouseY: 0,
   mouseDown: false,
-  digPressed: false,   // one-shot, consumed by the player update
+  digHeld: false,      // E held — drilling is a channel, not a keypress
+  mapOpen: false,      // Tab held — full-world map overlay
 };
 
 // PIXI containers, filled in by main.js at boot.

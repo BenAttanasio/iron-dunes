@@ -1,7 +1,7 @@
 {
-  "name": "tank-wars",
+  "name": "iron-dunes",
   "version": "1.0.0",
-  "description": "Tank Wars - Multiplayer tank combat game",
+  "description": "Iron Dunes: Rogue Battalions - single-player top-down tank survival",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

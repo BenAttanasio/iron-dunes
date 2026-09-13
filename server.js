@@ -11,8 +11,13 @@ const MIME = {
   '.css':  'text/css',
   '.png':  'image/png',
   '.jpg':  'image/jpeg',
+  '.webp': 'image/webp',
   '.svg':  'image/svg+xml',
   '.json': 'application/json',
+  '.ogg':  'audio/ogg',
+  '.mp3':  'audio/mpeg',
+  '.wav':  'audio/wav',
+  '.md':   'text/markdown; charset=utf-8',
 };
 
 const server = http.createServer((req, res) => {
@@ -38,5 +43,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Tank Wars server running at http://localhost:${PORT}`);
+  console.log(`Iron Dunes server running at http://localhost:${PORT}`);
 });

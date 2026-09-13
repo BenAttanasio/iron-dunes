@@ -2,12 +2,168 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tank Wars</title>
+<title>Iron Dunes: Rogue Battalions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Iron Dunes: Rogue Battalions — a top-down tank survival game. Drill the desert, haul the load home, outlive three rival clans.">
+
+<!-- Favicon is an inline SVG so there is no extra request and nothing to 404 at a
+     sub-path: a gold dune horizon under the green phosphor of the HUD. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0e08'/%3E%3Cpath d='M0 21c5-6 9-6 13-2s8 3 11-1 8-3 8-3v17H0z' fill='%23ccaa44'/%3E%3Crect x='10' y='12' width='12' height='6' rx='1' fill='%234dff88'/%3E%3Crect x='15' y='7' width='2' height='6' fill='%234dff88'/%3E%3C/svg%3E">
+
+<!-- Link previews. og:image and og:url must be ABSOLUTE urls for every scraper
+     that matters, and only the deploy knows the final address — fill these in
+     when the page lands on its real path. Relative values are left here so the
+     tags are obviously incomplete rather than silently wrong. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Iron Dunes: Rogue Battalions">
+<meta property="og:description" content="Drill the desert, haul the load home, outlive three rival clans. A revival of a Flash game that used to live on bonus.com.">
+<meta property="og:image" content="og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Iron Dunes: Rogue Battalions">
+<meta name="twitter:description" content="Drill the desert, haul the load home, outlive three rival clans.">
+<meta name="twitter:image" content="og-card.png">
+
 <link rel="stylesheet" href="css/style.css">
+<style>
+  /* Boot-layer styles live here, not in style.css: this panel's whole job is to
+     be visible when something failed to load, and a stylesheet is one of the
+     things that can fail. */
+  #boot {
+    position: fixed; inset: 0; display: none;
+    place-content: center; justify-items: center;
+    background: #0a0e08; color: #88aa88;
+    font: 14px/1.6 ui-monospace, Menlo, Consolas, monospace;
+    text-align: center; padding: 28px; z-index: 10;
+  }
+  #boot[data-show] { display: grid; }
+  #boot h1 { color: #ccaa44; font-size: 30px; letter-spacing: 1px; margin-bottom: 4px; }
+  #boot .wordmark { color: #8a7433; font-size: 10px; letter-spacing: 3px; margin-bottom: 22px; }
+  #boot p { max-width: 42ch; margin-bottom: 16px; }
+  #boot code { color: #cc6666; word-break: break-all; }
+  #boot button {
+    font: inherit; color: #ffdd88; background: #33280c;
+    border: 1px solid #ccaa44; border-radius: 3px;
+    padding: 9px 20px; cursor: pointer;
+  }
+  #boot button:hover { background: #4a3a11; }
+</style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/pixi.js@8.6.6/dist/pixi.min.js"></script>
-<script type="module" src="js/main.js"></script>
+
+<div id="boot">
+  <div>
+    <h1>IRON DUNES</h1>
+    <div class="wordmark">R O G U E &nbsp;B A T T A L I O N S</div>
+    <p id="boot-msg"></p>
+    <button id="boot-btn" hidden></button>
+  </div>
+</div>
+
+<!-- PixiJS is vendored rather than pulled from a CDN. On a CDN the engine is a
+     single point of failure the page cannot recover from — one blocked or slow
+     request and window.PIXI is undefined before a line of game code runs. Self
+     hosted, the game has no third-party runtime dependency at all. MIT; the
+     licence banner at the top of the file is the notice. -->
+<script src="js/vendor/pixi.min.js"></script>
+
+<script>
+(function () {
+  var boot = document.getElementById('boot');
+  var msg  = document.getElementById('boot-msg');
+  var btn  = document.getElementById('boot-btn');
+  var started = false;
+
+  function show(text, label, onClick) {
+    msg.innerHTML = text;
+    if (label) {
+      btn.hidden = false;
+      btn.textContent = label;
+      btn.onclick = onClick;
+    } else {
+      btn.hidden = true;
+    }
+    boot.setAttribute('data-show', '');
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    boot.removeAttribute('data-show');
+    var s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'js/main.js';
+    document.body.appendChild(s);
+  }
+
+  // 1. Engine present? Vendored, so this should only ever fire on a bad deploy —
+  //    which is exactly the case where a black canvas tells you nothing.
+  if (!window.PIXI) {
+    show('The game engine failed to load.<br><br>'
+       + '<code>js/vendor/pixi.min.js</code> did not run. If this page is served '
+       + 'from a sub-path, check that the address ends in a slash — every asset '
+       + 'here is referenced relatively.');
+    return;
+  }
+
+  // 2. WebGL. PixiJS 8 dropped the canvas renderer, so with no WebGL context the
+  //    engine throws "CanvasRenderer is not yet implemented" — true, and useless
+  //    to a player. Real cases: a GPU on the driver blocklist, hardware
+  //    acceleration switched off, a locked-down or very old browser.
+  var gl = null;
+  try {
+    var probe = document.createElement('canvas');
+    gl = probe.getContext('webgl2') || probe.getContext('webgl');
+  } catch (e) { /* some browsers throw rather than return null */ }
+  if (!gl) {
+    show('This browser has no <strong>WebGL</strong> available, and the game '
+       + 'cannot render without it.<br><br>'
+       + 'Usually that means hardware acceleration is switched off — look for it '
+       + 'in your browser’s performance or system settings — or that the graphics '
+       + 'driver is on a blocklist. A different browser is the quickest test.');
+    return;
+  }
+  // Release the probe: browsers cap live WebGL contexts, and the real one is
+  // about to be created.
+  var lose = gl.getExtension && gl.getExtension('WEBGL_lose_context');
+  if (lose) lose.loseContext();
+  gl = probe = null;
+
+  // 3. Input. The game binds keydown/keyup and mousemove only; there is no touch
+  //    control scheme. On a phone that produces a tank that cannot move, which
+  //    reads as broken rather than as unsupported — so say so instead. A coarse
+  //    pointer is not proof of no keyboard (tablets with keyboards exist), hence
+  //    the override rather than a hard block.
+  var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  var fine   = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  if (coarse && !fine) {
+    show('This one needs a <strong>keyboard and mouse</strong>.<br><br>'
+       + 'WASD to drive, mouse to aim, hold E to drill. There is no touch control '
+       + 'scheme yet, so on a phone the tank simply will not move.<br><br>'
+       + 'Come back on a desktop — or try it anyway if this device has a keyboard.',
+      'PLAY ANYWAY', start);
+    return;
+  }
+
+  // 4. Anything thrown after boot. Without this a runtime error leaves a black
+  //    canvas and no indication that anything happened at all.
+  function fail(what) {
+    if (boot.hasAttribute('data-show')) return;   // first error wins
+    show('The game hit an error and stopped.<br><br><code>' + what + '</code><br><br>'
+       + 'A reload usually clears it. If it does not, your saved career is still '
+       + 'in this browser’s local storage and is not affected.',
+      'RELOAD', function () { location.reload(); });
+  }
+  window.addEventListener('error', function (e) {
+    fail((e && e.message) || 'unknown error');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e && e.reason;
+    fail((r && (r.message || r)) || 'unknown error');
+  });
+
+  start();
+})();
+</script>
 </body>
 </html>
